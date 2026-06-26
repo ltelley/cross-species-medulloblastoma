@@ -71,22 +71,21 @@ Following Pöschl et al. (2014, *Acta Neuropathol*), GTML (Glt1-tTA::TRE-MYCN/Lu
 │   ├── zebrafish/
 │   │   └── GSE242897/GSE242897_19521raw_counts.txt.gz
 │   ├── chicken/
-│   │   ├── BULK_Chicken_expression.tsv
-│   │   └── BULK_Chicken_metadata.tsv
+│   │   └── BULK_Chicken_expression.tsv
 │   └── orthology/
 │       ├── human_ensembl_to_symbol.rds
 │       ├── mouse_ensembl_to_symbol.rds
 │       ├── zebrafish_to_human.rds
 │       └── mouse_to_human.rds
 ├── results/
-│   └── rf_pca_classification_results.csv
+│   └── rf_pca_classification_results.csv  # (generated) classification probabilities
 └── figures/
-    ├── cross_species_RF_PCA.png          # Main classification figure (boxplot)
-    ├── cross_species_RF_PCA.svg          # SVG version (editable)
-    ├── cross_species_ternary.png         # Ternary plot (SHH/G3/G4)
-    ├── cross_species_ternary.svg         # SVG version
-    └── cross_species_figures.pptx        # PowerPoint (editable vectors)
+    ├── cross_species_RF_PCA.png          # Figure: classification boxplot (panel b)
+    └── cross_species_ternary.png         # Figure: ternary plot SHH/G3/G4 (panel d)
 ```
+
+This is the **minimal set** needed to reproduce the two figures: `run_analysis.R`
+runs the full pipeline end-to-end (no other scripts required).
 
 ## Large Files Note
 

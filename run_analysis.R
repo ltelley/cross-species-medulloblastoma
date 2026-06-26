@@ -431,9 +431,7 @@ dir.create("figures", showWarnings = FALSE)
 dir.create("results", showWarnings = FALSE)
 
 ggsave("figures/cross_species_RF_PCA.png", p, width = 18, height = 7, dpi = 150)
-ggsave("figures/cross_species_RF_PCA.svg", p, width = 18, height = 7)
 cat("   Saved: figures/cross_species_RF_PCA.png\n")
-cat("   Saved: figures/cross_species_RF_PCA.svg\n")
 
 # Save results
 write.csv(all_results, "results/rf_pca_classification_results.csv", row.names = FALSE)
@@ -574,32 +572,6 @@ for (i in 1:nrow(centroids_labels)) {
 }
 
 ggsave("figures/cross_species_ternary.png", p_tern, width = 10, height = 8, dpi = 150)
-ggsave("figures/cross_species_ternary.svg", p_tern, width = 10, height = 8)
 cat("   Saved: figures/cross_species_ternary.png\n")
-cat("   Saved: figures/cross_species_ternary.svg\n")
-
-# ============================================================================
-# 9. EXPORT TO POWERPOINT (editable vector graphics)
-# ============================================================================
-cat("8. Exporting to PowerPoint...\n")
-
-if (!require(officer, quietly = TRUE)) install.packages("officer", repos = "https://cloud.r-project.org")
-if (!require(rvg, quietly = TRUE)) install.packages("rvg", repos = "https://cloud.r-project.org")
-library(officer)
-library(rvg)
-
-# Create PowerPoint with both figures
-pptx <- read_pptx()
-
-# Slide 1: RF Classification boxplot
-pptx <- add_slide(pptx, layout = "Blank")
-pptx <- ph_with(pptx, dml(ggobj = p), location = ph_location_fullsize())
-
-# Slide 2: Ternary plot
-pptx <- add_slide(pptx, layout = "Blank")
-pptx <- ph_with(pptx, dml(ggobj = p_tern), location = ph_location_fullsize())
-
-print(pptx, target = "figures/cross_species_figures.pptx")
-cat("   Saved: figures/cross_species_figures.pptx\n")
 
 cat("\n=== DONE ===\n")
