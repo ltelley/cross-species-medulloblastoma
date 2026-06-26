@@ -1,0 +1,25 @@
+# R
+.Rhistory
+.Rdata
+.RData
+.Ruserdata
+.Rproj.user/
+*.Rproj
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+
+# Office / temp / lock files
+~$*
+*~
+*.swp
+*.swo
+
+# ---------------------------------------------------------------------------
+# Large data files (> 100 MB) — excluded from git (GitHub hard limit = 100 MB)
+# Download them from GEO before running the analysis. See data/DOWNLOAD.md
+# ---------------------------------------------------------------------------
+data/human/GSE85217_raw.rds
+data/mouse_gtml/GPL6096.soft.gz
