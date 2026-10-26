@@ -50,10 +50,14 @@ zf_expr <- as.matrix(zf_agg[, -1])
 # --- Chicken/HDMB03 xenografts (This study) - Xenografts only ---
 chicken <- read.table("data/chicken/BULK_Chicken_expression.tsv",
                       header = TRUE, row.names = 1, sep = "\t")
-# Keep only xenograft samples (parenchyma), remove culture
+# Xenograft samples (parenchyma) AND pre-graft HDMB03 culture samples (
+# compares the cell line before and after grafting)
 xeno_cols <- grep("parenchyma", colnames(chicken), value = TRUE)
 chicken_expr <- log2(as.matrix(chicken[, xeno_cols]) + 1)
 rownames(chicken_expr) <- toupper(rownames(chicken_expr))
+cult_cols <- grep("HDMB03", colnames(chicken), value = TRUE)
+culture_expr <- log2(as.matrix(chicken[, cult_cols]) + 1)
+rownames(culture_expr) <- toupper(rownames(culture_expr))
 
 # --- Mouse (GSE65888: Kawauchi, Gibson) ---
 gse65888 <- getGEO(filename = "data/mouse/GSE65888-GPL1261_series_matrix.txt.gz", getGPL = FALSE)
@@ -204,7 +208,8 @@ rownames(gmyc_agg2) <- gmyc_agg2$Gene
 expr_gmyc <- as.matrix(gmyc_agg2[, -1])
 
 cat("   Human:", ncol(expr_human), "| Zebrafish:", ncol(zf_expr),
-    "| Chicken:", ncol(chicken_expr), "| Mouse GSE65888:", ncol(expr_mouse),
+    "| Chicken:", ncol(chicken_expr), "| HDMB03 culture:", ncol(culture_expr),
+    "| Mouse GSE65888:", ncol(expr_mouse),
     "| GTML:", ncol(expr_gtml), "| GTML_2023:", ncol(expr_gtml2023),
     "| GMYC:", ncol(expr_gmyc), "\n")
 
@@ -240,6 +245,7 @@ normalize_to_human <- function(expr, genes, means, sds) {
 X_human <- normalize_to_human(expr_human, common_genes, human_means, human_sds)
 X_zf <- normalize_to_human(zf_expr, common_genes, human_means, human_sds)
 X_ch <- normalize_to_human(chicken_expr, common_genes, human_means, human_sds)
+X_cult <- normalize_to_human(culture_expr, common_genes, human_means, human_sds)
 X_mouse <- normalize_to_human(expr_mouse, common_genes, human_means, human_sds)
 X_gtml <- normalize_to_human(expr_gtml, common_genes, human_means, human_sds)
 X_gtml2023 <- normalize_to_human(expr_gtml2023, common_genes, human_means, human_sds)
@@ -258,6 +264,7 @@ N_PCS <- 20
 human_pcs <- pca$x[, 1:N_PCS]
 zf_pcs <- X_zf %*% pca$rotation[, 1:N_PCS]
 ch_pcs <- X_ch %*% pca$rotation[, 1:N_PCS]
+cult_pcs <- X_cult %*% pca$rotation[, 1:N_PCS]
 mouse_pcs <- X_mouse %*% pca$rotation[, 1:N_PCS]
 gtml_pcs <- X_gtml %*% pca$rotation[, 1:N_PCS]
 gtml2023_pcs <- X_gtml2023 %*% pca$rotation[, 1:N_PCS]
@@ -304,6 +311,11 @@ pred_ch <- predict(rf_model, ch_pcs)
 probs_ch <- predict(rf_model, ch_pcs, type = "prob")
 cat("   Chicken predictions:", as.character(pred_ch), "\n")
 
+# HDMB03 culture (pre-graft)
+pred_cult <- predict(rf_model, cult_pcs)
+probs_cult <- predict(rf_model, cult_pcs, type = "prob")
+cat("   HDMB03 culture predictions:", as.character(pred_cult), "\n")
+
 # Mouse GSE65888
 pred_mouse <- predict(rf_model, mouse_pcs)
 probs_mouse <- predict(rf_model, mouse_pcs, type = "prob")
@@ -339,6 +351,10 @@ all_results <- rbind(
              model = "Xenograft",
              actual = "Group3", predicted = as.character(pred_ch),
              probs_ch, stringsAsFactors = FALSE),
+  data.frame(sample_id = rownames(cult_pcs), species = "Chicken_culture",
+             model = "Culture",
+             actual = "Group3", predicted = as.character(pred_cult),
+             probs_cult, stringsAsFactors = FALSE),
   data.frame(sample_id = rownames(mouse_pcs), species = "Mouse",
              model = mouse_info$model,
              actual = case_when(grepl("SHH", mouse_info$model) ~ "SHH",
@@ -382,6 +398,7 @@ plot_data$label <- case_when(
   plot_data$species == "Human" & plot_data$model == "Group3" ~ "Cavalli et al.\nCancer Cell 2017\nGroup3",
   plot_data$species == "Human" & plot_data$model == "Group4" ~ "Cavalli et al.\nCancer Cell 2017\nGroup4",
   plot_data$species == "Zebrafish" ~ "Casey et al.\nCell Rep 2024\nZMB",
+  plot_data$species == "Chicken_culture" ~ "This study\nHDMB03 culture",
   plot_data$species == "Chicken" ~ "This study\nXenograft",
   plot_data$species == "Mouse" & plot_data$model == "SHH_Ptch" ~ "Kawauchi et al.\nCancer Cell 2012\nSHH_Ptch",
   plot_data$species == "Mouse" & plot_data$model == "SHH_Nestin" ~ "Kawauchi et al.\nOncogene 2017\nSHH_Nestin",
@@ -396,7 +413,7 @@ plot_data$label <- case_when(
 order_vec <- c(
  "Cavalli et al.\nCancer Cell 2017\nWNT", "Cavalli et al.\nCancer Cell 2017\nSHH",
  "Cavalli et al.\nCancer Cell 2017\nGroup3", "Cavalli et al.\nCancer Cell 2017\nGroup4",
- "Casey et al.\nCell Rep 2024\nZMB", "This study\nXenograft",
+ "Casey et al.\nCell Rep 2024\nZMB", "This study\nHDMB03 culture", "This study\nXenograft",
  "Kawauchi et al.\nCancer Cell 2012\nSHH_Ptch",
  "Kawauchi et al.\nOncogene 2017\nSHH_Nestin", "Kawauchi et al.\nOncogene 2017\nG3_IUE",
  "Kawauchi et al.\nCancer Cell 2012\nG3_Ortho",
@@ -416,7 +433,7 @@ p <- ggplot(plot_data, aes(x = label, y = Probability, fill = Subgroup)) +
              size = 1.5, alpha = 0.5) +
   scale_fill_manual(values = colors) +
   scale_color_manual(values = colors, guide = "none") +
-  geom_vline(xintercept = c(4.5, 6.5), linetype = "dashed", alpha = 0.3) +
+  geom_vline(xintercept = c(4.5, 7.5), linetype = "dashed", alpha = 0.3) +
   labs(title = "Cross-Species MB Classification (Random Forest in PCA Space)",
        subtitle = sprintf("RF (ntree=1000) on %d PCs from %d genes | Human test accuracy: %.1f%%",
                           N_PCS, length(common_genes), human_acc),
@@ -467,6 +484,7 @@ ternary_data$condition <- case_when(
   ternary_data$species == "Human" & ternary_data$model == "WNT" ~ "Human WNT",
   ternary_data$species == "Zebrafish" ~ "Zebrafish (Casey)",
   ternary_data$species == "Chicken" ~ "HDMB03 Xenograft",
+  ternary_data$species == "Chicken_culture" ~ "HDMB03 culture",
   ternary_data$species == "Mouse" & ternary_data$model == "SHH_Ptch" ~ "Mouse SHH_Ptch",
   ternary_data$species == "Mouse" & ternary_data$model == "SHH_Nestin" ~ "Mouse SHH_Nestin",
   ternary_data$species == "Mouse" & ternary_data$model == "G3_IUE" ~ "Mouse G3_IUE",
@@ -487,6 +505,7 @@ condition_colors <- c(
   "Human G4" = "#9b59b6",
   "Zebrafish (Casey)" = "#e67e22",
   "HDMB03 Xenograft" = "#d35400",
+  "HDMB03 culture" = "#f39c12",
   "Mouse SHH_Ptch" = "#c0392b",
   "Mouse SHH_Nestin" = "#922b21",
   "Mouse G3_IUE" = "#27ae60",
@@ -515,6 +534,7 @@ label_positions <- tribble(
   "Human G4",         0.05, 0.10, 0.85, "G4",
   "Zebrafish (Casey)", 0.70, 0.05, 0.25, "ZF",
   "HDMB03 Xenograft", 0.20, 0.65, 0.15, "Xenograft",
+  "HDMB03 culture",   0.15, 0.30, 0.55, "Culture",
   "Mouse SHH_Ptch",   0.55, 0.35, 0.10, "SHH_Ptch",
   "Mouse SHH_Nestin", 0.70, 0.15, 0.15, "SHH_Nestin",
   "Mouse G3_IUE",     0.25, 0.60, 0.15, "G3_IUE",

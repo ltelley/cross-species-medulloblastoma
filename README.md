@@ -4,7 +4,7 @@ This repository contains code and data to classify animal model medulloblastoma 
 
 ## Overview
 
-We train a Random Forest classifier on human medulloblastoma samples (Cavalli et al., Cancer Cell 2017) using PCA coordinates, then project animal models (mouse, zebrafish, chicken xenografts) to classify them into one of four MB subgroups: WNT, SHH, Group3, or Group4.
+We train a Random Forest classifier on human medulloblastoma samples (Cavalli et al., Cancer Cell 2017) using PCA coordinates, then project animal models (mouse, zebrafish, chicken xenografts) and the HDMB03 cell line before grafting to classify them into one of four MB subgroups: WNT, SHH, Group3, or Group4.
 
 ## Datasets
 
@@ -15,7 +15,7 @@ We train a Random Forest classifier on human medulloblastoma samples (Cavalli et
 | **GSE36594** | Swartling et al., 2012 | Mouse | Affymetrix Mouse Exon 1.0 ST | GTML Group3 (n=32) |
 | **GSE139240** | Mainwaring et al., 2023 | Mouse | RNA-seq | GTML (n=8) + GMYC (n=6) Group3 |
 | **GSE242897** | Casey et al., 2024 | Zebrafish | RNA-seq | ptch1;tp53 SHH tumors (n=3) |
-| **HDMB03** | This study | Chicken | RNA-seq | HDMB03 xenografts (G3, n=3) |
+| **HDMB03** | This study | Chicken | RNA-seq | HDMB03 cells in culture (pre-graft, n=3) and avian xenografts (post-graft, n=3) |
 
 ### Mouse Group 3 Models (GTML/GMYC)
 Following Pöschl et al. (2014, *Acta Neuropathol*), GTML (Glt1-tTA::TRE-MYCN/Luc) is the **only mouse model** with a clear match to human Group 3 tumors in both AGDEX and k-means analyses. 84% of GTML tumors (27/32) cluster with human Group 3. GMYC (MYC-driven) uses the same Tet-OFF system and is also classified as Group 3.
@@ -48,7 +48,8 @@ Following Pöschl et al. (2014, *Acta Neuropathol*), GTML (Glt1-tTA::TRE-MYCN/Lu
 - **Mouse SHH models**: Correctly classified as SHH
 - **Mouse G3 models (IUE/Ortho)**: Mixed classification (cross-species limitation)
 - **GTML/GMYC models**: Forced Group3 annotation per Pöschl et al. 2014 (classifier predicts ~80% SHH)
-- **HDMB03 xenografts**: Classified as Group3 (expected for HDMB03 cell line)
+- **HDMB03 culture (pre-graft)**: Classified as Group3
+- **HDMB03 xenografts (post-graft)**: Classified as Group3, with subgroup probabilities indistinguishable from the pre-graft cells — the G3 identity of the cell line is maintained in the avian cerebellar environment
 
 ![Ternary Plot](figures/cross_species_ternary.png)
 
